@@ -10,12 +10,13 @@
  */
 
 struct CAN_msg {
+    unsigned int can_id;
     time_t time;
     uint8_t msg[8];
 };
 
-CAN_msg buffer;
+CAN_msg buffer[]; //Indexed by CAN id
 
-CAN_msg readBuffer();
+CAN_msg readBuffer(unsigned int can_id);
 
 #endif//__CAN_INTERFACE_H
