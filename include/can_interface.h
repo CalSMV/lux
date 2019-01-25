@@ -1,5 +1,5 @@
-#ifndef __CAN_INTERFACE_H
-#define __CAN_INTERFACE_H
+#ifndef __LUX_CAN_INTERFACE_H
+#define __LUX_CAN_INTERFACE_H
 
 #include <ctime>
 
@@ -12,11 +12,11 @@
 struct CAN_msg {
     unsigned int can_id;
     time_t time;
-    uint8_t msg[8];
+    char msg[8];
 };
 
 CAN_msg buffer[]; //Indexed by CAN id
 
 CAN_msg readBuffer(unsigned int can_id);
 
-#endif//__CAN_INTERFACE_H
+#endif//__LUX_CAN_INTERFACE_H

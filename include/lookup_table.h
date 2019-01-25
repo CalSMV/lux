@@ -1,0 +1,6 @@
+#ifndef __LUX_LOOKUP_TABLE_H
+#define __LUX_LOOKUP_TABLE_H
+
+
+
+#endif//__LUX_LOOKUP_TABLE_H

@@ -1,0 +1,6 @@
+#ifndef __LUX_FEEDBACK_READER_H
+#define __LUX_FEEDBACK_READER_H
+
+
+
+#endif//__LUX_FEEDBACK_READER_H

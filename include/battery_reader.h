@@ -1,0 +1,6 @@
+#ifndef __LUX_BATTERY_READER_H
+#define __LUX_BATTERY_READER_H
+
+
+
+#endif//__LUX_BATTERY_READER_H

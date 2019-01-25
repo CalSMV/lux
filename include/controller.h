@@ -1,0 +1,6 @@
+#ifndef __LUX_CONTROLLER_H
+#define __LUX_CONTROLLER_H
+
+
+
+#endif//__LUX_CONTROLLER_H

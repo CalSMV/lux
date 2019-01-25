@@ -1,0 +1,6 @@
+#ifndef __LUX_BRAKE_READER_H
+#define __LUX_BRAKE_READER_H
+
+
+
+#endif//__LUX_BRAKE_READER_H

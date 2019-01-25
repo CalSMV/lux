@@ -1,0 +1,6 @@
+#ifndef __LUX_FEEDBACK_FILTER_H
+#define __LUX_FEEDBACK_FILTER_H
+
+
+
+#endif//__LUX_FEEDBACK_FILTER_H
