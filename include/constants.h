@@ -1,6 +1,12 @@
 #ifndef __LUX_CONSTANTS_H
 #define __LUX_CONSTANTS_H
 
+constexpr short MAX_SHORT = 32767;
+constexpr double MAX_SHORT_D = 32767;
+inline double percent(const short pVal) {
+  return static_cast<double>(pVal) / MAX_SHORT_D;
+}
+
 using DURATION_TYPE = std::chrono::duration<uint64_t, std::milli>;
 constexpr DURATION_TYPE ZERO_TIME(0);
 
@@ -17,7 +23,7 @@ constexpr int HALL_FAULT_LEVEL = 2;
 
 constexpr int BREAK_TEMP = 0; //Placeholder
 constexpr int SHUTDOWN_TEMP = 0; //Placeholder
-constexpr int MIN_VOLTAGE = 0;
+constexpr int MIN_VOLTAGE = 0; //Placeholder
 
 enum PIN {
 };
