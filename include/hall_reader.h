@@ -3,6 +3,8 @@
 
 #include <chrono>
 
+static std::tuple<short, short, short> hallValues_;
+
 void hallUpdate();
 
 std::tuple<short, short, short> getHallValues();

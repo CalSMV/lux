@@ -3,6 +3,8 @@
 
 #include <chrono>
 
+static uint8_t accelValue_;
+
 void accelUpdate();
 
 uint8_t getAccelValue();

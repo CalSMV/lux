@@ -4,6 +4,9 @@
 #include <tuple>
 #include <chrono>
 
+static std::tuple<int, int> BMSValues_;
+static short BMSThrottle_;
+
 void BMSUpdate();
 
 std::tuple<int, int> getBMSValues();

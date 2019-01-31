@@ -3,6 +3,8 @@
 
 #include <chrono>
 
+static bool brakeValue_;
+
 void brakeUpdate();
 
 bool getBrakeValue();
