@@ -19,4 +19,6 @@ CAN_msg buffer[]; //Indexed by CAN id
 
 CAN_msg readBuffer(unsigned int can_id);
 
+void CANUpdate();
+
 #endif//__LUX_CAN_INTERFACE_H
