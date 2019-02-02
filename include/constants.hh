@@ -1,6 +1,8 @@
 #ifndef __LUX_CONSTANTS_H
 #define __LUX_CONSTANTS_H
 
+#include <chrono>
+
 constexpr short MAX_SHORT = 32767;
 constexpr double MAX_SHORT_D = 32767;
 inline double percent(const short pVal) {
