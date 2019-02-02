@@ -1,17 +1,17 @@
-#include "operating_loop.h"
+#include "operating_loop.hh"
 
 #include <thread>
 #include <tuple>
 
-#include "accelerator_reader.h"
-#include "battery_reader.h"
-#include "brake_reader.h"
-#include "can_interface.h"
-#include "controller.h"
-#include "observer.h"
-#include "hall_reader.h"
-#include "fet_writer.h"
-#include "lookup_table.h"
+#include "accelerator_reader.hh"
+#include "battery_reader.hh"
+#include "brake_reader.hh"
+#include "can_interface.hh"
+#include "controller.hh"
+#include "observer.hh"
+#include "hall_reader.hh"
+#include "fet_writer.hh"
+#include "lookup_table.hh"
 #include "constants.h"
 
 bool operatingLoop(std::chrono::system_clock::time_point prevTime, std::chrono::system_clock::time_point currTime) {

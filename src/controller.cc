@@ -1,14 +1,14 @@
-#include "controller.h"
+#include "controller.hh"
 
 #include <algorithm>
 #include <optional>
 
-#include "accelerator_reader.h"
-#include "brake_reader.h"
-#include "hall_reader.h"
-#include "observer.h"
-#include "lookup_table.h"
-#include "battery_reader.h"
+#include "accelerator_reader.hh"
+#include "brake_reader.hh"
+#include "hall_reader.hh"
+#include "observer.hh"
+#include "lookup_table.hh"
+#include "battery_reader.hh"
 #include "constants.h"
 
 //TODO: Make optional?
