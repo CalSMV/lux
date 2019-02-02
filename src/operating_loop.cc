@@ -16,13 +16,13 @@
 
 bool operatingLoop(std::chrono::system_clock::time_point prevTime, std::chrono::system_clock::time_point currTime) {
   CANUpdate();
+  BMSUpdate();
   brakeUpdate();
   accelUpdate();
-  BMSUpdate();
   hallUpdate();
 
   observerUpdate(prevTime, currTime, getHallValues()); //TODO fix
-  if(!controllerUpdate(prevTime, currTime)) {
+  if(controllerUpdate(prevTime, currTime) == 2) {
     return false;
   }
 
