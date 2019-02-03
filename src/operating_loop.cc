@@ -25,6 +25,8 @@ bool switchingLoop(std::chrono::system_clock::time_point prevTime, std::chrono::
   std::this_thread::sleep_for(uptime);
   setMOSFET(MOSFET::PWM, 0);
   std::this_thread::sleep_until(endTime);
+
+  return 0;
 }
 
 bool operatingLoop(std::chrono::system_clock::time_point prevTime, std::chrono::system_clock::time_point currTime) {
