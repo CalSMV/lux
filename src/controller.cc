@@ -56,17 +56,6 @@ int TimeoutFaultLevel(std::chrono::system_clock::time_point reference) {
   }
 }
 
-void cyclePWM(DURATION_TYPE cycleTime, short dutyCycle) {
-  auto startTime = std::chrono::system_clock::now();
-  DURATION_TYPE uptime = std::chrono::duration_cast<DURATION_TYPE>(cycleTime * percent(dutyCycle));
-  auto onTime = startTime + uptime;
-  auto endTime = startTime + cycleTime;
-  setMOSFET(MOSFET::PWM, 1);
-  std::this_thread::sleep_for(uptime);
-  setMOSFET(MOSFET::PWM, 0);
-  std::this_thread::sleep_until(endTime);
-}
-
 int controllerUpdate(std::chrono::system_clock::time_point prevTime, std::chrono::system_clock::time_point currTime) {
   uint8_t accel = getAccelValue();
   bool brake = getBrakeValue();

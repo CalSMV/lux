@@ -13,6 +13,7 @@ using DURATION_TYPE = std::chrono::duration<uint64_t, std::milli>;
 constexpr DURATION_TYPE ZERO_TIME(0);
 
 constexpr DURATION_TYPE LOOP_TIME(100000);
+constexpr DURATION_TYPE PWML_TIME(1000);
 
 constexpr DURATION_TYPE BRAKE_TIMEOUT(1000);
 constexpr int BRAKE_FAULT_LEVEL = 2;
