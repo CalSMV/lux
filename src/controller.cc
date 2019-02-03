@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <optional>
+#include <thread>
 
 #include "accelerator_reader.hh"
 #include "brake_reader.hh"
@@ -9,7 +10,8 @@
 #include "observer.hh"
 #include "lookup_table.hh"
 #include "battery_reader.hh"
-#include "constants.h"
+#include "constants.hh"
+#include "fet_writer.hh"
 
 //TODO: Make optional?
 double setPoint_;
@@ -52,6 +54,17 @@ int TimeoutFaultLevel(std::chrono::system_clock::time_point reference) {
       timeout_fault = std::max(timeout_fault, HALL_FAULT_LEVEL);
     }
   }
+}
+
+void cyclePWM(DURATION_TYPE cycleTime, short dutyCycle) {
+  auto startTime = std::chrono::system_clock::now();
+  DURATION_TYPE uptime = std::chrono::duration_cast<DURATION_TYPE>(cycleTime * percent(dutyCycle));
+  auto onTime = startTime + uptime;
+  auto endTime = startTime + cycleTime;
+  setMOSFET(MOSFET::PWM, 1);
+  std::this_thread::sleep_for(uptime);
+  setMOSFET(MOSFET::PWM, 0);
+  std::this_thread::sleep_until(endTime);
 }
 
 int controllerUpdate(std::chrono::system_clock::time_point prevTime, std::chrono::system_clock::time_point currTime) {
