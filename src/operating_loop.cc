@@ -14,20 +14,20 @@
 #include "lookup_table.hh"
 #include "constants.hh"
 
-bool switchingLoop(std::chrono::system_clock::time_point prevTime, std::chrono::system_clock::time_point currTime) {
+//bool switchingLoop(std::chrono::system_clock::time_point prevTime, std::chrono::system_clock::time_point currTime) {
 
-  short dutyCycle = getAccelValue();
+  //short dutyCycle = getAccelValue();
 
-  DURATION_TYPE uptime = std::chrono::duration_cast<DURATION_TYPE>(PWML_TIME * percent(dutyCycle));
-  auto onTime = currTime + uptime;
-  auto endTime = currTime + PWML_TIME;
-  setMOSFET(MOSFET::PWM, 1);
-  std::this_thread::sleep_for(uptime);
-  setMOSFET(MOSFET::PWM, 0);
-  std::this_thread::sleep_until(endTime);
+  //DURATION_TYPE uptime = std::chrono::duration_cast<DURATION_TYPE>(PWML_TIME * percent(dutyCycle));
+  //auto onTime = currTime + uptime;
+  //auto endTime = currTime + PWML_TIME;
+  //setMOSFET(MOSFET::PWM, 1);
+  //std::this_thread::sleep_for(uptime);
+  //setMOSFET(MOSFET::PWM, 0);
+  //std::this_thread::sleep_until(endTime);
 
-  return 0;
-}
+  //return 0;
+//}
 
 bool operatingLoop(std::chrono::system_clock::time_point prevTime, std::chrono::system_clock::time_point currTime) {
   CANUpdate();
@@ -37,6 +37,8 @@ bool operatingLoop(std::chrono::system_clock::time_point prevTime, std::chrono::
   hallUpdate();
 
   std::tuple<int, int, int> phaseValues = lookupValue(getHallValues());
+
+  setPWM(PWML_TIME, getAccelValue());
 
   setMOSFET(MOSFET::SWITCH_A, std::get<0>(phaseValues));
   setMOSFET(MOSFET::SWITCH_B, std::get<1>(phaseValues));
