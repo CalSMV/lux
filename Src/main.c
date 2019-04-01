@@ -10,26 +10,29 @@
 #include "stdbool.h"
 
 typedef double percent;
-typedef struct {
-  bool hall_val_1;      //Still requires calibration as to the physical configuration
+typedef struct
+{
+  bool hall_val_1;      /* Still requires calibration as to the physical configuration */
   bool hall_val_2;
   bool hall_val_3;
 } hallVals;
-typedef struct {
-  int phase_1_state;    //Phase A
-  int phase_2_state;    //Phase B
-  int phase_3_state;    //Phase C
-} phaseVals;            //0: Enable 0, PWM off; 1: Enable 1, PWM on; -1: Enable 1, PWM off
+
+typedef struct
+{
+  int phase_1_state;    /* Phase A */
+  int phase_2_state;    /* Phase B */
+  int phase_3_state;    /* Phase C */
+} phaseVals;            /* 0: Enable 0, PWM off; 1: Enable 1, PWM on; -1: Enable 1, PWM off */
 
 #define REVERSIBLE_MOTOR  false
-#define MAX_DUTY_CYCLE    4200 //?? or INT_MAX
-#define PWM_FREQUENCY 10000 //Semi-arbitrary, but should be functional
+#define MAX_DUTY_CYCLE    4200 /* ?? or INT_MAX */
+#define PWM_FREQUENCY 10000 /* Semi-arbitrary, but should be functional */
 
 ADC_HandleTypeDef hadc1;
 
 TIM_HandleTypeDef htim8;
 
-static char lookup_table[8] = {0, 49, 14, 52, 28, 13, 19, 0};   //Bitfield representation
+static char lookup_table[8] = {0, 49, 14, 52, 28, 13, 19, 0}; /* Bitfield representation */
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -49,12 +52,12 @@ inline void initPWM();
 
 int main(void)
 {
-  HAL_Init();           //Start up essential hardware functions
-  SystemClock_Config(); //Configure and enable central system clock
-  initPWM();            //Set all duty cycles to 0% and initialize general pwm frequency
+  HAL_Init();           /* Start up essential hardware functions */
+  SystemClock_Config(); /* Configure and enable central system clock */
+  initPWM();            /* Set all duty cycles to 0% and initialize general pwm frequency */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();       //Enable port timers and configure pins      
+  MX_GPIO_Init();       /* Enable port timers and configure pins */
   MX_ADC1_Init();
   MX_TIM8_Init();
 
@@ -66,7 +69,7 @@ int main(void)
     hallVals  halls  = getHalls();
     phaseVals motors = getPhase(halls, brake);
     
-    //Commutation strategy: Enable the 
+    /* Commutation strategy: Enable the two drivers passing power, pass PWM to the high-side driver. */
     enableDrivers(motors.phase_1_state, motors.phase_2_state, motors.phase_3_state);
     setDutyCycle(brake ? accel : 0);
     enablePWM(motors.phase_1_state > 0, motors.phase_2_state > 0, motors.phase_3_state > 0);
@@ -90,6 +93,7 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
+  /* We're not currently using any prescalers/dividers -- TODO might want to look into that. */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
@@ -108,8 +112,7 @@ static void MX_ADC1_Init(void)
 {
   ADC_ChannelConfTypeDef sConfig = {0};
 
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
-  */
+  /* Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)  */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
@@ -126,8 +129,8 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
-  */
+  /* Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. */
+  /* &hadc1 is the reference to use for reading from the Accelerator analog input pin. */
   sConfig.Channel = ADC_CHANNEL_6;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
@@ -144,7 +147,7 @@ static void MX_TIM8_Init(void)
   TIM_OC_InitTypeDef sConfigOC = {0};
   TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
-  //Using default timer configurations
+  /* Using default timer configurations, 16MHz, no prescalers. */
   htim8.Instance = TIM8;
   htim8.Init.Prescaler = 0;
   htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -187,6 +190,8 @@ static void MX_TIM8_Init(void)
   {
     Error_Handler();
   }
+  
+  /* Break/dead time not necessary thanks to the gate driver hardware we're using. */
   sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
   sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
   sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
@@ -219,38 +224,38 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
+  /* Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOI, Enable_1_Pin|Enable_3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
+  /* Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Enable_2_GPIO_Port, Enable_2_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : Enable_1_Pin Enable_3_Pin */
+  /* Configure GPIO pins : Enable_1_Pin Enable_3_Pin */
   GPIO_InitStruct.Pin = Enable_1_Pin|Enable_3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Hall_1_Pin Hall_2_Pin */
+  /* Configure GPIO pins : Hall_1_Pin Hall_2_Pin */
   GPIO_InitStruct.Pin = Hall_1_Pin|Hall_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Hall_3_Pin */
+  /* Configure GPIO pin : Hall_3_Pin */
   GPIO_InitStruct.Pin = Hall_3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(Hall_3_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Brake_Pin */
+  /* Configure GPIO pin : Brake_Pin */
   GPIO_InitStruct.Pin = Brake_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(Brake_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Enable_2_Pin */
+  /* Configure GPIO pin : Enable_2_Pin */
   GPIO_InitStruct.Pin = Enable_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -259,73 +264,93 @@ static void MX_GPIO_Init(void)
 
 }
 
-/* USER CODE BEGIN 4 */
+/* Returns raw Accelerator value through ADC. */
 inline percent   getAccel() {
   return HAL_ADC_GetValue(&hadc1);
 }
-inline bool      getBrake() {
+
+/* Returns the value of the brake input, default high if wire disconnected (pull-up). */
+inline bool      getBrake()
+{
   return HAL_GPIO_ReadPin(Brake_GPIO_Port, Brake_Pin);
 }
-inline hallVals  getHalls() {
+
+/* Return struct containing three booleans, one for each hall sensor.
+ * No more than two should be true at any time; checking for this is
+ * done elsewhere. */
+inline hallVals  getHalls()
+{
   hallVals i;
   i.hall_val_1 = HAL_GPIO_ReadPin(Hall_1_GPIO_Port, Hall_1_Pin);
   i.hall_val_2 = HAL_GPIO_ReadPin(Hall_2_GPIO_Port, Hall_2_Pin);
   i.hall_val_3 = HAL_GPIO_ReadPin(Hall_3_GPIO_Port, Hall_3_Pin);
   return i;
 }
-inline phaseVals getPhase(hallVals sensor_values, bool brake_state) {
+
+/* Calculates commutation table and returns the necessary operations
+ * for each gate driver.
+ * State =  1: High-side MOSFET open. Driver recieves high enable signal, PWM input.
+ * State = -1: Low-side MOSFET open. Driver recieves high enable signal.
+ * State =  0: Both MOSFETs closed. Driver recieves low enable signal.
+ */
+inline phaseVals getPhase(hallVals sensor_values, bool brake_state)
+{
   phaseVals i;
   i.phase_1_state = 0;
   i.phase_2_state = 0;
   i.phase_3_state = 0;
   
-  //If the car is braking, do not actuate gate drivers
-  if (brake_state) {
+  /* If the car is braking, do not actuate gate drivers. */
+  if (brake_state)
+  {
     return i;
   }
-
-  if (REVERSIBLE_MOTOR) { //Counterclockwise rotation not currently supported
+  
+  /* Counterclockwise rotation not currently supported by the below table. */
+  if (REVERSIBLE_MOTOR)
+  {
     Error_Handler();
   }
   
-  //Bit-string: Each hall_val_x is a bit in a three-bit bit-string.
+  /* Bit-string: Each hall_val_x is a bit in a three-bit bit-string -- unique values guaranteed. */
   int phase = 1*sensor_values.hall_val_1 + 2*sensor_values.hall_val_2 + 4*sensor_values.hall_val_3;
-  //Switch statement manually decomposes the lookup table -- '''slightly slower''' but fine for now
-  switch(phase) {
-  case 0: //Invalid state, no halls active
+  /* Switch statement manually decomposes the lookup table -- '''slightly slower''' but fine for now. */
+  switch(phase)
+  {
+  case 0: /* Invalid state, no halls active */
     Error_Handler();
     return i;
-  case 1: //Phase II
+  case 1: /* Phase II */
     i.phase_1_state =  1;
     i.phase_2_state =  0;
     i.phase_3_state = -1;
     return i;
-  case 2: //Phase IV
+  case 2: /* Phase IV */
     i.phase_1_state = -1;
     i.phase_2_state =  1;
     i.phase_3_state =  0;
     return i;
-  case 3: //Phase III
+  case 3: /* Phase III */
     i.phase_1_state =  0;
     i.phase_2_state =  1;
     i.phase_3_state = -1;
     return i;
-  case 4: //Phase VI
+  case 4: /* Phase VI */
     i.phase_1_state =  0;
     i.phase_2_state = -1;
     i.phase_3_state =  1;
     return i;
-  case 5: //Phase I
+  case 5: /* Phase I */
     i.phase_1_state =  1;
     i.phase_2_state = -1;
     i.phase_3_state =  0;
     return i;
-  case 6: //Phase V
+  case 6: /* Phase V */
     i.phase_1_state = -1;
     i.phase_2_state =  0;
     i.phase_3_state =  1;
     return i;
-  case 7: //Invalid state, all halls active
+  case 7: /* Invalid state, all halls active. */
     Error_Handler();
     return i;
   }
@@ -334,13 +359,15 @@ inline phaseVals getPhase(hallVals sensor_values, bool brake_state) {
 }
 
 /* Enables/disables gate drivers according to the boolean inputs. */
-inline void enableDrivers(bool driver_1, bool driver_2, bool driver_3) {
+inline void enableDrivers(bool driver_1, bool driver_2, bool driver_3)
+{
   HAL_GPIO_WritePin(Enable_1_GPIO_Port, Enable_1_Pin, driver_1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
   HAL_GPIO_WritePin(Enable_2_GPIO_Port, Enable_2_Pin, driver_2 ? GPIO_PIN_SET : GPIO_PIN_RESET);
   HAL_GPIO_WritePin(Enable_3_GPIO_Port, Enable_3_Pin, driver_3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 /* All PWM signals are on the same duty cycle; this sets all of them at once. */
-void setDutyCycle(double pwm_duty_cycle) {
+void setDutyCycle(double pwm_duty_cycle)
+{
   TIM8->CCR1 = pwm_duty_cycle* MAX_DUTY_CYCLE;
   TIM8->CCR2 = pwm_duty_cycle* MAX_DUTY_CYCLE;
   TIM8->CCR3 = pwm_duty_cycle* MAX_DUTY_CYCLE;
@@ -350,13 +377,15 @@ void setDutyCycle(double pwm_duty_cycle) {
 }
 
 /* Enables/disables individual pwm outputs according to the boolean inputs. */
-void enablePWM(bool pwm_1, bool pwm_2, bool pwm_3) {
+void enablePWM(bool pwm_1, bool pwm_2, bool pwm_3)
+{
   pwm_1 ? HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1) : HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
   pwm_2 ? HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1) : HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
   pwm_3 ? HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1) : HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
 }
 
-inline void initPWM() {
+inline void initPWM()
+{
   setDutyCycle(0);
   enablePWM(0, 0, 0);
   TIM8->ARR = PWM_FREQUENCY;
