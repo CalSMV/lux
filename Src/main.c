@@ -258,7 +258,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 inline percent   getAccel() {
-  return HAL_GPIO_ReadPin(Accel_GPIO_Port, Accel_Pin); //TODO ?
+  return HAL_ADC_GetValue(&hadc1);
 }
 inline bool      getBrake() {
   return HAL_GPIO_ReadPin(Brake_GPIO_Port, Brake_Pin);
@@ -334,8 +334,10 @@ inline void enableDrivers(bool driver_1, bool driver_2, bool driver_3) {
   HAL_GPIO_WritePin(Enable_3_GPIO_Port, Enable_3_Pin, driver_3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 inline void setDutyCycle(double pwm_duty_cycle) {
+  
 }
 inline void enablePWM(bool pwm_1, bool pwm_2, bool pwm_3) {
+  
 }
 inline void initPWM() {
   setDutyCycle(0);
