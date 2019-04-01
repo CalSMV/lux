@@ -11,7 +11,7 @@
 
 typedef double percent;
 typedef struct {
-  bool hall_val_1;
+  bool hall_val_1;      //Still requires calibration as to the physical configuration
   bool hall_val_2;
   bool hall_val_3;
 } hallVals;
@@ -23,7 +23,7 @@ typedef struct {
 
 #define REVERSIBLE_MOTOR  false
 #define MAX_DUTY_CYCLE    4200 //?? or INT_MAX
-#define PWM_FREQUENCY 10000 //Literally arbitrary /shrug
+#define PWM_FREQUENCY 10000 //Semi-arbitrary, but should be functional
 
 ADC_HandleTypeDef hadc1;
 
@@ -49,12 +49,12 @@ inline void initPWM();
 
 int main(void)
 {
-  HAL_Init();
-  SystemClock_Config();
-  initPWM();
+  HAL_Init();           //Start up essential hardware functions
+  SystemClock_Config(); //Configure and enable central system clock
+  initPWM();            //Set all duty cycles to 0% and initialize general pwm frequency
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
+  MX_GPIO_Init();       //Enable port timers and configure pins      
   MX_ADC1_Init();
   MX_TIM8_Init();
 
@@ -66,6 +66,7 @@ int main(void)
     hallVals  halls  = getHalls();
     phaseVals motors = getPhase(halls, brake);
     
+    //Commutation strategy: Enable the 
     enableDrivers(motors.phase_1_state, motors.phase_2_state, motors.phase_3_state);
     setDutyCycle(brake ? accel : 0);
     enablePWM(motors.phase_1_state > 0, motors.phase_2_state > 0, motors.phase_3_state > 0);
@@ -143,6 +144,7 @@ static void MX_TIM8_Init(void)
   TIM_OC_InitTypeDef sConfigOC = {0};
   TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
+  //Using default timer configurations
   htim8.Instance = TIM8;
   htim8.Init.Prescaler = 0;
   htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -272,12 +274,12 @@ inline hallVals  getHalls() {
   return i;
 }
 inline phaseVals getPhase(hallVals sensor_values, bool brake_state) {
-  //Doing this without lookup table for now, should be fine
   phaseVals i;
   i.phase_1_state = 0;
   i.phase_2_state = 0;
   i.phase_3_state = 0;
   
+  //If the car is braking, do not actuate gate drivers
   if (brake_state) {
     return i;
   }
@@ -286,7 +288,9 @@ inline phaseVals getPhase(hallVals sensor_values, bool brake_state) {
     Error_Handler();
   }
   
+  //Bit-string: Each hall_val_x is a bit in a three-bit bit-string.
   int phase = 1*sensor_values.hall_val_1 + 2*sensor_values.hall_val_2 + 4*sensor_values.hall_val_3;
+  //Switch statement manually decomposes the lookup table -- '''slightly slower''' but fine for now
   switch(phase) {
   case 0: //Invalid state, no halls active
     Error_Handler();
@@ -329,11 +333,13 @@ inline phaseVals getPhase(hallVals sensor_values, bool brake_state) {
   return i;
 }
 
+/* Enables/disables gate drivers according to the boolean inputs. */
 inline void enableDrivers(bool driver_1, bool driver_2, bool driver_3) {
   HAL_GPIO_WritePin(Enable_1_GPIO_Port, Enable_1_Pin, driver_1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
   HAL_GPIO_WritePin(Enable_2_GPIO_Port, Enable_2_Pin, driver_2 ? GPIO_PIN_SET : GPIO_PIN_RESET);
   HAL_GPIO_WritePin(Enable_3_GPIO_Port, Enable_3_Pin, driver_3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
+/* All PWM signals are on the same duty cycle; this sets all of them at once. */
 void setDutyCycle(double pwm_duty_cycle) {
   TIM8->CCR1 = pwm_duty_cycle* MAX_DUTY_CYCLE;
   TIM8->CCR2 = pwm_duty_cycle* MAX_DUTY_CYCLE;
@@ -343,11 +349,13 @@ void setDutyCycle(double pwm_duty_cycle) {
   TIM8->CCR6 = pwm_duty_cycle* MAX_DUTY_CYCLE;
 }
 
+/* Enables/disables individual pwm outputs according to the boolean inputs. */
 void enablePWM(bool pwm_1, bool pwm_2, bool pwm_3) {
   pwm_1 ? HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1) : HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
   pwm_2 ? HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1) : HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
   pwm_3 ? HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1) : HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
 }
+
 inline void initPWM() {
   setDutyCycle(0);
   enablePWM(0, 0, 0);
