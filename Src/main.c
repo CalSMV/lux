@@ -21,8 +21,9 @@ typedef struct {
   int phase_3_state;    //Phase C
 } phaseVals;            //0: Enable 0, PWM off; 1: Enable 1, PWM on; -1: Enable 1, PWM off
 
-#define REVERSIBLE_MOTOR false
-#define MAX_DUTY_CYCLE   INT_MAX
+#define REVERSIBLE_MOTOR  false
+#define MAX_DUTY_CYCLE    4200 //?? or INT_MAX
+#define PWM_FREQUENCY 10000 //Literally arbitrary /shrug
 
 ADC_HandleTypeDef hadc1;
 
@@ -41,8 +42,8 @@ inline hallVals  getHalls();
 inline phaseVals getPhase(hallVals sensor_values, bool brake_state); //TODO Will call the lookup table for info
 
 inline void enableDrivers(bool driver_1, bool driver_2, bool driver_3);
-inline void setDutyCycle(double pwm_duty_cycle);
-inline void enablePWM(bool pwm_1, bool pwm_2, bool pwm_3);
+void setDutyCycle(double pwm_duty_cycle);
+void enablePWM(bool pwm_1, bool pwm_2, bool pwm_3);
 
 inline void initPWM();
 
@@ -333,16 +334,24 @@ inline void enableDrivers(bool driver_1, bool driver_2, bool driver_3) {
   HAL_GPIO_WritePin(Enable_2_GPIO_Port, Enable_2_Pin, driver_2 ? GPIO_PIN_SET : GPIO_PIN_RESET);
   HAL_GPIO_WritePin(Enable_3_GPIO_Port, Enable_3_Pin, driver_3 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
-inline void setDutyCycle(double pwm_duty_cycle) {
-  
+void setDutyCycle(double pwm_duty_cycle) {
+  TIM8->CCR1 = pwm_duty_cycle* MAX_DUTY_CYCLE;
+  TIM8->CCR2 = pwm_duty_cycle* MAX_DUTY_CYCLE;
+  TIM8->CCR3 = pwm_duty_cycle* MAX_DUTY_CYCLE;
+  TIM8->CCR4 = pwm_duty_cycle* MAX_DUTY_CYCLE;
+  TIM8->CCR5 = pwm_duty_cycle* MAX_DUTY_CYCLE;
+  TIM8->CCR6 = pwm_duty_cycle* MAX_DUTY_CYCLE;
 }
-inline void enablePWM(bool pwm_1, bool pwm_2, bool pwm_3) {
-  
+
+void enablePWM(bool pwm_1, bool pwm_2, bool pwm_3) {
+  pwm_1 ? HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1) : HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
+  pwm_2 ? HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1) : HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
+  pwm_3 ? HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1) : HAL_TIM_PWM_Stop(&htim8, TIM_CHANNEL_1);
 }
 inline void initPWM() {
   setDutyCycle(0);
   enablePWM(0, 0, 0);
-  //SET THE FREQUENCY
+  TIM8->ARR = PWM_FREQUENCY;
 }
 
 void Error_Handler(void)
